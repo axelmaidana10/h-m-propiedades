@@ -9,16 +9,15 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.context_processor
 def inject_supabase_config():
-    # Estas variables se inyectan en el HTML para el JavaScript.
     return dict(supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY)
 
 @app.route('/')
 def home():
     try:
-        # Se cargan 6 propiedades destacadas
         response = supabase.table('propiedades').select('*, imagenes(url)').order('created_at', desc=True).limit(6).execute()
         propiedades = response.data
-    except Exception:
+    except Exception as e:
+        print(f"Error en home: {e}")
         propiedades = []
     return render_template('index.html', propiedades=propiedades)
 
@@ -35,13 +34,44 @@ def detalle(id):
 def catalogo():
     tipo = request.args.get('tipo')
     estado = request.args.get('estado')
-    query = supabase.table('propiedades').select('*, imagenes(url)')
-    if tipo: query = query.eq('tipo', tipo)
-    if estado: query = query.eq('estado', estado)
-    response = query.execute()
-    return render_template('index.html', propiedades=response.data, filtro_activo=True)
+    
+    try:
+        # DEBUG: Ver todas las propiedades primero
+        print("\n=== DEBUG: MOSTRANDO TODAS LAS PROPIEDADES ===")
+        all_props = supabase.table('propiedades').select('*').execute()
+        print(f"Total propiedades en BD: {len(all_props.data)}")
+        
+        if all_props.data and len(all_props.data) > 0:
+            print("\nColumnas disponibles:", list(all_props.data[0].keys()))
+            print("\nDatos de cada propiedad:")
+            for p in all_props.data:
+                print(f"  ID:{p.get('id')} | tipo='{p.get('tipo')}' | estado='{p.get('estado')}'")
+        print("=" * 70)
+        
+        # Iniciar query con filtros
+        query = supabase.table('propiedades').select('*, imagenes(url)')
+        
+        if tipo and tipo.strip():
+            # Usar ilike para búsqueda insensible a mayúsculas
+            query = query.ilike('tipo', tipo)
+            print(f"\nFiltrando por tipo (ilike): '{tipo}'")
+            
+        if estado and estado.strip():
+            # Usar ilike para búsqueda insensible a mayúsculas
+            query = query.ilike('estado', estado)
+            print(f"Filtrando por estado (ilike): '{estado}'")
+        
+        response = query.execute()
+        propiedades = response.data
+        
+        print(f"\nTotal propiedades encontradas: {len(propiedades)}\n")
+        
+    except Exception as e:
+        print(f"ERROR al filtrar propiedades: {e}")
+        propiedades = []
+        
+    return render_template('index.html', propiedades=propiedades, filtro_activo=True)
 
-# Rutas de Autenticación
 @app.route('/login')
 def login():
     return render_template('login.html')
