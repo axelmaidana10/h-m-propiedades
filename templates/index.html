@@ -19,9 +19,12 @@
         <div class="bg-white/95 backdrop-blur-sm p-3 rounded-2xl shadow-2xl flex items-center space-x-3 w-full max-w-lg mx-auto">
             <select id="hero-tipo" class="flex-1 p-3 rounded-xl border-none focus:ring-0 text-slate-700 bg-transparent">
                 <option value="">Tipo</option>
-                <option value="Apartamento">Apartamento</option>
                 <option value="Casa">Casa</option>
                 <option value="Terreno">Terreno</option>
+                <option value="Departamento">Departamento</option>
+                <option value="Oficina">Oficina</option>
+                <option value="Local">Local</option>
+                <option value="Otro">Otro</option>
             </select>
             <select id="hero-estado" class="flex-1 p-3 rounded-xl border-none focus:ring-0 text-slate-700 bg-transparent">
                 <option value="">Estado</option>
@@ -37,14 +40,32 @@
 {% endif %}
 
 <div class="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-bold text-slate-800 mb-10 border-b pb-4">
+    <div class="flex justify-between items-center mb-10 border-b pb-4">
+        <h2 class="text-3xl font-bold text-slate-800">
+            {% if filtro_activo %}
+                Catálogo de Propiedades
+            {% else %}
+                Propiedades Destacadas
+            {% endif %}
+        </h2>
+        
         {% if filtro_activo %}
-            Catálogo de Propiedades
-        {% else %}
-            Propiedades Destacadas
+        <a href="/" class="text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center transition">
+            <i class="fas fa-times mr-2"></i> Limpiar filtros
+        </a>
         {% endif %}
-    </h2>
+    </div>
 
+    {% if propiedades|length == 0 %}
+    <div class="text-center py-16">
+        <i class="fas fa-search text-6xl text-slate-300 mb-4"></i>
+        <h3 class="text-2xl font-bold text-slate-600 mb-2">No se encontraron propiedades</h3>
+        <p class="text-slate-500 mb-6">Intenta con otros filtros o explora todas las propiedades</p>
+        <a href="/" class="btn-brand px-6 py-3 rounded-xl inline-block">
+            Ver todas las propiedades
+        </a>
+    </div>
+    {% else %}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
         {% for p in propiedades %}
         <div class="block overflow-hidden rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1 bg-white border border-slate-100">
@@ -71,7 +92,7 @@
                 <div class="grid grid-cols-3 divide-x divide-slate-100 bg-slate-50 border border-slate-100 rounded-xl mt-4 py-3">
                     <div class="text-center">
                         <i class="fas fa-bed text-slate-400 mb-1"></i>
-                        <p class="text-xs font-bold text-slate-700">{{ p.habitaciones }} Hab</p>
+                        <p class="text-xs font-bold text-slate-700">{{ p.dormitorios }} Hab</p>
                     </div>
                     <div class="text-center border-l border-slate-100">
                         <i class="fas fa-bath text-slate-400 mb-1"></i>
@@ -90,6 +111,7 @@
         </div>
         {% endfor %}
     </div>
+    {% endif %}
 </div>
 
 <script>
